@@ -36,3 +36,16 @@
     transform: rotate(360deg);
   }
 }
+
+.button-pressed {
+  opacity: 50%;
+}
+
+.flash-button {
+  filter: brightness(2);
+}
+
+.button {
+  font-size: 20px;
+  padding: 10px 20px;
+}
