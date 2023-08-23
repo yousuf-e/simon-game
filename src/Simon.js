@@ -67,31 +67,30 @@ const Simon = () => {
 
   const addToSeq = useCallback(() => {
     const newSeq = [...sequence];
-    const nextVal = Math.floor(Math.random() * 4);
+    const nextVal = Math.floor(Math.random() * colors.length);
     newSeq.push(colors[nextVal]);
     setSequence(newSeq);
   }, [sequence]);
 
   const startGame = () => {
     console.log('game started!');
-    console.log(currentPlayer);
-    console.log(gameStatus);
-    console.log(sequence);
+    console.log('sequence at game start is', sequence);
     addToSeq();
     setCurrentPlayer('simon');
     setGameStatus('playing');
   };
 
   const updateUserInput = (e) => {
-    console.log(e.target.value);
-    const button = e.target;
-    const newUserInput = [...userInput];
-    newUserInput.push(e.target.value);
-    setUserInput(newUserInput);
-    button.classList.add('button-pressed');
-    setTimeout(() => {
-      button.classList.remove('button-pressed');
-    }, 100);
+    if (currentPlayer === 'player') {
+      const button = e.target;
+      const newUserInput = [...userInput];
+      newUserInput.push(e.target.value);
+      setUserInput(newUserInput);
+      button.classList.add('button-pressed');
+      setTimeout(() => {
+        button.classList.remove('button-pressed');
+      }, 100);
+    }
   };
 
   useEffect(() => {
@@ -103,9 +102,16 @@ const Simon = () => {
   useEffect(() => {
     console.log('userInput', userInput);
     console.log('gameStatus', gameStatus);
-
-    //when the player is done inputting
+    //check if the player lost continutously
+    if (sequence.slice(0, userInput.length).join('') !== userInput.join('')) {
+      setGameStatus('lost');
+      setSequence([]);
+      setScore(0);
+      setUserInput([]);
+      return;
+    }
     if (userInput.length === sequence.length) {
+      //when the player is done inputting
       //if the game is still playing
       if (currentPlayer === 'player' && gameStatus === 'playing') {
         //if the input matches the sequence
@@ -115,6 +121,7 @@ const Simon = () => {
           setScore((s) => s + 1);
           //add another elemetn to the sequence
           addToSeq();
+          setCurrentPlayer('simon');
         } else {
           //lose condition
           setGameStatus('lost');
@@ -123,7 +130,6 @@ const Simon = () => {
         }
         //regardless, reset the user input and switch the player
         setUserInput([]);
-        setCurrentPlayer('simon');
       }
     }
   }, [userInput]);
@@ -212,11 +218,11 @@ const Simon = () => {
                 console.log(currentPlayer);
                 console.log(gameStatus);
                 console.log(sequence);
-
+                addToSeq();
                 startGame();
               }}
             >
-              Play!
+              Play again!
             </button>
           </>
         )}
