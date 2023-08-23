@@ -73,8 +73,6 @@ const Simon = () => {
   }, [sequence]);
 
   const startGame = () => {
-    console.log('game started!');
-    console.log('sequence at game start is', sequence);
     addToSeq();
     setCurrentPlayer('simon');
     setGameStatus('playing');
@@ -136,13 +134,16 @@ const Simon = () => {
 
   return (
     <>
-      {gameStatus === 'not-started' ? (
-        <h1>Press Play to begin!</h1>
-      ) : currentPlayer === 'simon' ? (
-        <h1>Simon's Turn</h1>
-      ) : (
-        <h1>Player 1's Turn</h1>
-      )}
+      {gameStatus === 'not-started' && <h1>Press Play to begin!</h1>}
+
+      {gameStatus === 'playing' &&
+        (currentPlayer === 'simon' ? (
+          <h1>Simon's Turn</h1>
+        ) : (
+          <h1>Player 1's Turn</h1>
+        ))}
+
+      {gameStatus === 'lost' && <h1 style={{ margin: '10px' }}>You lost :(</h1>}
 
       <span>
         <button
@@ -200,6 +201,7 @@ const Simon = () => {
         {gameStatus === 'not-started' && (
           <button
             style={{ fontSize: '20px', padding: '10px 20px', margin: '10px' }}
+            className='button-23'
             onClick={startGame}
           >
             Play!
@@ -209,22 +211,18 @@ const Simon = () => {
           <h3 style={{ margin: '10px' }}>Score: {score}</h3>
         )}
         {gameStatus === 'lost' && (
-          <>
-            <h3 style={{ margin: '10px' }}>You lost :(</h3>
-            <h3 style={{ margin: '10px' }}>Press 'Play' to start again</h3>
+          <span style={{ display: 'inline' }}>
+            <h3 style={{ margin: '10px' }}>Press 'Play' to start again!</h3>
             <button
               style={{ fontSize: '20px', padding: '10px 20px', margin: '10px' }}
               onClick={() => {
-                console.log(currentPlayer);
-                console.log(gameStatus);
-                console.log(sequence);
-                addToSeq();
+                // addToSeq();
                 startGame();
               }}
             >
               Play again!
             </button>
-          </>
+          </span>
         )}
       </span>
     </>
