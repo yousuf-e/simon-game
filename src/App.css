@@ -48,4 +48,7 @@
 .button {
   font-size: 20px;
   padding: 10px 20px;
+  height: 100px;
+  width: 100px;
+  margin: 5px;
 }

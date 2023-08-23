@@ -10,9 +10,10 @@ const colors = ['red', 'yellow', 'blue', 'green'];
 const Simon = () => {
   //state will have
   // -> the sequence to execute
-  const [sequence, setSequence] = useState(['red', 'blue']);
+  const [sequence, setSequence] = useState([]);
   const [userInput, setUserInput] = useState([]);
-  const [playerWon, setPlayerWon] = useState(true);
+  // const [playerWon, setPlayerWon] = useState(true);
+  const [gameStatus, setGameStatus] = useState('not-started');
   const [score, setScore] = useState(0);
   // -> the sequence pressed after play
   const [currentPlayer, setCurrentPlayer] = useState('player');
@@ -36,18 +37,6 @@ const Simon = () => {
 
   const flashBtns = useCallback(async () => {
     for (let i = 0; i < sequence.length; i++) {
-      // const newBtnVals = { ...buttonValues };
-      // newBtnVals[sequence[i]] = 'X';
-      // setButtonValues(newBtnVals);
-      // await timeout(250);
-      // setButtonValues({
-      //   1: '1',
-      //   2: '2',
-      //   3: '3',
-      //   4: '4',
-      // });
-      // await timeout(50);
-
       let ref = null;
       //seq is going to be ['red','blue'....]
       //if the cuyrrent el of seq at the current index is equal to colors[i], we want to update the ref variable to the appropriate {color}Ref
@@ -71,12 +60,26 @@ const Simon = () => {
       ref.current.classList.add('flash-button');
       await timeout(500);
       ref.current.classList.remove('flash-button');
+      await timeout(200);
     }
+    setCurrentPlayer('player');
+  }, [sequence]);
+
+  const addToSeq = useCallback(() => {
+    const newSeq = [...sequence];
+    const nextVal = Math.floor(Math.random() * 4);
+    newSeq.push(colors[nextVal]);
+    setSequence(newSeq);
   }, [sequence]);
 
   const startGame = () => {
+    console.log('game started!');
+    console.log(currentPlayer);
+    console.log(gameStatus);
+    console.log(sequence);
+    addToSeq();
     setCurrentPlayer('simon');
-    setPlayerWon(true);
+    setGameStatus('playing');
   };
 
   const updateUserInput = (e) => {
@@ -88,47 +91,58 @@ const Simon = () => {
     button.classList.add('button-pressed');
     setTimeout(() => {
       button.classList.remove('button-pressed');
-    }, 250);
+    }, 100);
   };
 
   useEffect(() => {
-    console.log('current sequence', sequence);
-    if (currentPlayer === 'simon') {
+    if (currentPlayer === 'simon' && gameStatus === 'playing') {
       flashBtns();
-      setCurrentPlayer('player');
     }
-  }, [currentPlayer, flashBtns, sequence]);
+  }, [currentPlayer]);
 
   useEffect(() => {
-    console.log(userInput);
+    console.log('userInput', userInput);
+    console.log('gameStatus', gameStatus);
+
+    //when the player is done inputting
     if (userInput.length === sequence.length) {
-      if (currentPlayer === 'player') {
+      //if the game is still playing
+      if (currentPlayer === 'player' && gameStatus === 'playing') {
+        //if the input matches the sequence
         if (sequence.join('') === userInput.join('')) {
           // win condition
           console.log('WINNNNN');
-          setScore(score + 1);
-
+          setScore((s) => s + 1);
           //add another elemetn to the sequence
-          const newSeq = [...sequence];
-          const nextVal = Math.floor(Math.random() * 4);
-          newSeq.push(colors[nextVal]);
-          setSequence(newSeq);
+          addToSeq();
         } else {
-          setPlayerWon(false);
+          //lose condition
+          setGameStatus('lost');
+          setSequence([]);
+          setScore(0);
         }
+        //regardless, reset the user input and switch the player
         setUserInput([]);
         setCurrentPlayer('simon');
       }
     }
-  }, [userInput, currentPlayer, score, sequence]);
+  }, [userInput]);
 
   return (
     <>
-      {currentPlayer === 'simon' ? <h1>Simon</h1> : <h1>Player 1</h1>}
+      {gameStatus === 'not-started' ? (
+        <h1>Press Play to begin!</h1>
+      ) : currentPlayer === 'simon' ? (
+        <h1>Simon's Turn</h1>
+      ) : (
+        <h1>Player 1's Turn</h1>
+      )}
+
       <span>
         <button
           style={{
             backgroundColor: 'red',
+            borderTopLeftRadius: 100,
           }}
           className='button'
           value='red'
@@ -140,6 +154,7 @@ const Simon = () => {
         <button
           style={{
             backgroundColor: 'blue',
+            borderTopRightRadius: 100,
           }}
           className='button'
           value={'blue'}
@@ -153,6 +168,7 @@ const Simon = () => {
         <button
           style={{
             backgroundColor: 'green',
+            borderBottomLeftRadius: 100,
           }}
           value='green'
           className='button'
@@ -164,6 +180,7 @@ const Simon = () => {
         <button
           style={{
             backgroundColor: 'yellow',
+            borderBottomRightRadius: 100,
           }}
           className='button'
           value={'yellow'}
@@ -174,30 +191,36 @@ const Simon = () => {
         </button>
       </span>
       <span>
-        <button
-          style={{ fontSize: '20px', padding: '10px 20px' }}
-          onClick={() => startGame()}
-        >
-          Play!
-        </button>
+        {gameStatus === 'not-started' && (
+          <button
+            style={{ fontSize: '20px', padding: '10px 20px', margin: '10px' }}
+            onClick={startGame}
+          >
+            Play!
+          </button>
+        )}
+        {gameStatus === 'playing' && (
+          <h3 style={{ margin: '10px' }}>Score: {score}</h3>
+        )}
+        {gameStatus === 'lost' && (
+          <>
+            <h3 style={{ margin: '10px' }}>You lost :(</h3>
+            <h3 style={{ margin: '10px' }}>Press 'Play' to start again</h3>
+            <button
+              style={{ fontSize: '20px', padding: '10px 20px', margin: '10px' }}
+              onClick={() => {
+                console.log(currentPlayer);
+                console.log(gameStatus);
+                console.log(sequence);
+
+                startGame();
+              }}
+            >
+              Play!
+            </button>
+          </>
+        )}
       </span>
-      {playerWon ? (
-        <div
-          style={{
-            backgroundColor: 'green',
-          }}
-        >
-          Winning!!
-        </div>
-      ) : (
-        <div
-          style={{
-            backgroundColor: 'red',
-          }}
-        >
-          Lost!!
-        </div>
-      )}
     </>
   );
 };
